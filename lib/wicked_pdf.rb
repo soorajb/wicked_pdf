@@ -3,7 +3,7 @@
 
 require 'logger'
 require 'digest/md5'
-require 'open3'
+require 'win32/open3'
 require 'active_support/core_ext/class/attribute_accessors'
 
 require 'wicked_pdf_railtie'
@@ -26,10 +26,10 @@ class WickedPdf
     command_for_stdin_stdout = "#{@exe_path} #{parse_options(options)} -q - - " # -q for no errors on stdout
     p "*"*15 + command_for_stdin_stdout + "*"*15 unless defined?(Rails) and Rails.env != 'development'
     pdf, err = begin
-      Open3.popen3(command_for_stdin_stdout) do |stdin, stdout, stderr|
-        stdin.binmode
-        stdout.binmode
-        stderr.binmode
+      Open3.popen3(command_for_stdin_stdout,'b') do |stdin, stdout, stderr|
+        #stdin.binmode
+        #stdout.binmode
+        #stderr.binmode
         stdin.write(string)
         stdin.close
         [stdout.read, stderr.read]
@@ -69,6 +69,7 @@ class WickedPdf
       "--#{name.gsub('_', '-')} " + case type
         when :boolean then ""
         when :numeric then value.to_s
+		when :hf then "#{value}"
         else "'#{value}'"
       end + " "
     end
@@ -86,7 +87,7 @@ class WickedPdf
           r += make_options(opt_hf, [:font_size, :spacing], "#{hf.to_s}", :numeric)
           r += make_options(opt_hf, [:line], "#{hf.to_s}", :boolean)
           unless opt_hf[:html].blank?
-            r += make_option("#{hf.to_s}-html", opt_hf[:html][:url]) unless opt_hf[:html][:url].blank?
+            r += make_option("#{hf.to_s}-html", opt_hf[:html][:url],:hf) unless opt_hf[:html][:url].blank?
           end
         end
       end unless options.blank?
