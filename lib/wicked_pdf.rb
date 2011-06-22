@@ -3,13 +3,19 @@
 
 require 'logger'
 require 'digest/md5'
-require 'win32/open3'
 require 'active_support/core_ext/class/attribute_accessors'
 
 require 'wicked_pdf_railtie'
 require 'wicked_pdf_tempfile'
 
 class WickedPdf
+  if Platform::is_windows?
+   include Win32PdfRenderer
+  elsif Platform::is_linux?
+   include NixPdfRenderer
+  else
+   raise "Unable to find Platform"
+  end
   @@config = {}
   cattr_accessor :config
 
@@ -22,24 +28,6 @@ class WickedPdf
     raise "Wkhtmltopdf is not executable" unless File.executable?(@exe_path)
   end
 
-  def pdf_from_string(string, options={})
-    command_for_stdin_stdout = "#{@exe_path} #{parse_options(options)} -q - - " # -q for no errors on stdout
-    p "*"*15 + command_for_stdin_stdout + "*"*15 unless defined?(Rails) and Rails.env != 'development'
-    pdf, err = begin
-      Open3.popen3(command_for_stdin_stdout,'b') do |stdin, stdout, stderr|
-        #stdin.binmode
-        #stdout.binmode
-        #stderr.binmode
-        stdin.write(string)
-        stdin.close
-        [stdout.read, stderr.read]
-      end
-    rescue Exception => e
-      raise "Failed to execute #{@exe_path}: #{e}"
-    end
-    raise "PDF could not be generated!\n#{err}" if pdf and pdf.length == 0
-    pdf
-  end
 
   private
 
@@ -87,7 +75,11 @@ class WickedPdf
           r += make_options(opt_hf, [:font_size, :spacing], "#{hf.to_s}", :numeric)
           r += make_options(opt_hf, [:line], "#{hf.to_s}", :boolean)
           unless opt_hf[:html].blank?
+			if Platform::is_windows?
             r += make_option("#{hf.to_s}-html", opt_hf[:html][:url],:hf) unless opt_hf[:html][:url].blank?
+			elsif Platform::is_linux?
+			r += make_option("#{hf.to_s}-html", opt_hf[:html][:url]) unless opt_hf[:html][:url].blank?
+			end
           end
         end
       end unless options.blank?
