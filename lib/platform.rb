@@ -1,10 +1,10 @@
 class Platform
 
- def self.is_windows?
-  RUBY_PLATFORM =~ /mswin/i or RUBY_PLATFORM =~ /mingw/i or RUBY_PLATFORM =~ /bccwin/i or RUBY_PLATFORM =~ /wince/i
+ def is_windows?
+  RUBY_PLATFORM =~ /mswin|mingw|bccwin|wince/i
  end
 
- def self.is_linux?
-  RUBY_PLATFORM =~ /linux/i or RUBY_PLATFORM =~ /netbsd/i or RUBY_PLATFORM =~ /cygwin/i
+ def is_linux?
+  RUBY_PLATFORM =~ /linux|netbsd|cygwin/i
  end
 end
