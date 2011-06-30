@@ -1,6 +1,5 @@
-require 'open3' 
+require 'open3'
 module NixPdfRenderer
-
 def pdf_from_string(string, options={})
     command_for_stdin_stdout = "#{@exe_path} #{parse_options(options)} -q - - " # -q for no errors on stdout
     p "*"*15 + command_for_stdin_stdout + "*"*15 unless defined?(Rails) and Rails.env != 'development'

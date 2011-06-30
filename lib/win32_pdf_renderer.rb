@@ -1,7 +1,6 @@
 require 'win32/open3'
 module Win32PdfRenderer
 
- 
 def pdf_from_string(string, options={})
     command_for_stdin_stdout = "#{@exe_path} #{parse_options(options)} -q - - " # -q for no errors on stdout
     p "*"*15 + command_for_stdin_stdout + "*"*15 unless defined?(Rails) and Rails.env != 'development'
