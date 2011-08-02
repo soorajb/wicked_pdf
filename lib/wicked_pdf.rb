@@ -9,9 +9,9 @@ require 'wicked_pdf_railtie'
 require 'wicked_pdf_tempfile'
 
 class WickedPdf
-  if Platform::is_windows?
+  if Platform.is_windows?
    include Win32PdfRenderer
-  elsif Platform::is_linux?
+  elsif Platform.is_linux?
    include NixPdfRenderer
   else
    raise "Unable to find Platform"
